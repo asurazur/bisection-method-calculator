@@ -12,6 +12,7 @@ class bisection:
         self.x1 = x1
         self.e = e
         self.fx = fx
+        self.steps = {"x2": [], "f(x2)": []}
 
     def set_fx(self, fx: str):
         self.fx = fx
@@ -48,6 +49,8 @@ class bisection:
         x_1 = self.x1
         while condition:
             x2 = (x_0 + x_1)/2
+            self.steps["x2"].append(x2)
+            self.steps["f(x2)"].append(self.f(x2))
             if self.f(x_0) * self.f(x2) < 0:
                 x_1 = x2
             else:
