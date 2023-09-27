@@ -20,6 +20,29 @@ def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
 
 
+def change_entry(char):
+    # Get the currently focused widget
+    # if button entry, put char at cursor then put the cursor at the end
+    focused_widget = window.focus_get()
+
+    if char not in "sin()cos()x()%^.*/+-" and focused_widget != entry_4:
+        if focused_widget == entry_1:
+            guess1.set(guess1.get() + char)
+        elif focused_widget == entry_2:
+            guess2.set(guess2.get() + char)
+    elif focused_widget == entry_4:
+        current_equation = equation.get()
+        try:
+            if current_equation[-1] == char and char in "x()%^.*/+-" and len(current_equation):
+                return  # Don't append the character if it's equal to the last character and in the specified set
+        except:
+            equation.set(current_equation + char)
+        else:
+            equation.set(current_equation + char)
+
+    print("{} key is pressed".format(char))
+
+
 def validate_guess_input(P):
     if P == "":
         return True
@@ -41,13 +64,13 @@ def validate_fx_input(P):
     for char in P:
         if char not in valid_chars:
             return False
-        if char in "x()%.*/+-" and char == prev_char:
+        if char in "x()%^.*/+-" and char == prev_char:
             return False
         prev_char = char
     return True
 
 
-def show_result(event):
+def show_result(event=None):
     expression = bisection(
         equation.get(),
         float(guess1.get()),
@@ -58,11 +81,14 @@ def show_result(event):
         result_var.set(str(result))
     else:
         result_var.set("Invalid Input")
+    print(window.focus_get())
 
 
 def clear():
     guess1.set("0")
     guess2.set("0")
+    result_var.set("")
+    equation.set("")
 
 
 if __name__ == "__main__":
@@ -91,14 +117,14 @@ if __name__ == "__main__":
     canvas.place(x=0, y=0)
     button_image_1 = PhotoImage(
         file=relative_to_assets("button_1.png"))
-    button_1 = Button(
+    equal_button = Button(
         image=button_image_1,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_1 clicked"),
+        command=show_result,
         relief="flat"
     )
-    button_1.place(
+    equal_button.place(
         x=545.0,
         y=556.0,
         width=161.0,
@@ -107,14 +133,14 @@ if __name__ == "__main__":
 
     button_image_2 = PhotoImage(
         file=relative_to_assets("button_2.png"))
-    button_2 = Button(
+    divide_button = Button(
         image=button_image_2,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_2 clicked"),
+        command=lambda: change_entry("/"),
         relief="flat"
     )
-    button_2.place(
+    divide_button.place(
         x=635.0,
         y=194.0,
         width=70.0,
@@ -123,14 +149,14 @@ if __name__ == "__main__":
 
     button_image_3 = PhotoImage(
         file=relative_to_assets("button_3.png"))
-    button_3 = Button(
+    close_par_button = Button(
         image=button_image_3,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_3 clicked"),
+        command=lambda: change_entry(")"),
         relief="flat"
     )
-    button_3.place(
+    close_par_button.place(
         x=455.0,
         y=194.0,
         width=70.0,
@@ -139,14 +165,14 @@ if __name__ == "__main__":
 
     button_image_4 = PhotoImage(
         file=relative_to_assets("button_4.png"))
-    button_4 = Button(
+    x_button = Button(
         image=button_image_4,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_4 clicked"),
+        command=lambda: change_entry("x"),
         relief="flat"
     )
-    button_4.place(
+    x_button.place(
         x=545.0,
         y=194.0,
         width=70.0,
@@ -155,14 +181,14 @@ if __name__ == "__main__":
 
     button_image_5 = PhotoImage(
         file=relative_to_assets("button_5.png"))
-    button_5 = Button(
+    sine_button = Button(
         image=button_image_5,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_5 clicked"),
+        command=lambda: change_entry("sin()"),
         relief="flat"
     )
-    button_5.place(
+    sine_button.place(
         x=545.0,
         y=374.0,
         width=70.0,
@@ -171,14 +197,14 @@ if __name__ == "__main__":
 
     button_image_6 = PhotoImage(
         file=relative_to_assets("button_6.png"))
-    button_6 = Button(
+    exponent_button = Button(
         image=button_image_6,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_6 clicked"),
+        command=lambda: change_entry("^"),
         relief="flat"
     )
-    button_6.place(
+    exponent_button.place(
         x=545.0,
         y=284.0,
         width=70.0,
@@ -187,14 +213,14 @@ if __name__ == "__main__":
 
     button_image_7 = PhotoImage(
         file=relative_to_assets("button_7.png"))
-    button_7 = Button(
+    cosine_button = Button(
         image=button_image_7,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_7 clicked"),
+        command=lambda: change_entry("cos()"),
         relief="flat"
     )
-    button_7.place(
+    cosine_button.place(
         x=545.0,
         y=464.0,
         width=70.0,
@@ -203,14 +229,14 @@ if __name__ == "__main__":
 
     button_image_8 = PhotoImage(
         file=relative_to_assets("button_8.png"))
-    button_8 = Button(
+    open_par_button = Button(
         image=button_image_8,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_8 clicked"),
+        command=lambda: change_entry("("),
         relief="flat"
     )
-    button_8.place(
+    open_par_button.place(
         x=365.0,
         y=194.0,
         width=70.0,
@@ -219,14 +245,14 @@ if __name__ == "__main__":
 
     button_image_9 = PhotoImage(
         file=relative_to_assets("button_9.png"))
-    button_9 = Button(
+    clear_button = Button(
         image=button_image_9,
         borderwidth=0,
         highlightthickness=0,
         command=clear,
         relief="flat"
     )
-    button_9.place(
+    clear_button.place(
         x=275.0,
         y=194.0,
         width=70.0,
@@ -235,14 +261,14 @@ if __name__ == "__main__":
 
     button_image_10 = PhotoImage(
         file=relative_to_assets("button_10.png"))
-    button_10 = Button(
+    minus_button = Button(
         image=button_image_10,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_10 clicked"),
+        command=lambda: change_entry("-"),
         relief="flat"
     )
-    button_10.place(
+    minus_button.place(
         x=635.0,
         y=374.0,
         width=70.0,
@@ -251,14 +277,14 @@ if __name__ == "__main__":
 
     button_image_11 = PhotoImage(
         file=relative_to_assets("button_11.png"))
-    button_11 = Button(
+    six_button = Button(
         image=button_image_11,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_11 clicked"),
+        command=lambda: change_entry("6"),
         relief="flat"
     )
-    button_11.place(
+    six_button.place(
         x=455.0,
         y=374.0,
         width=70.0,
@@ -267,14 +293,14 @@ if __name__ == "__main__":
 
     button_image_12 = PhotoImage(
         file=relative_to_assets("button_12.png"))
-    button_12 = Button(
+    five_button = Button(
         image=button_image_12,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_12 clicked"),
+        command=lambda: change_entry("5"),
         relief="flat"
     )
-    button_12.place(
+    five_button.place(
         x=365.0,
         y=374.0,
         width=70.0,
@@ -283,14 +309,14 @@ if __name__ == "__main__":
 
     button_image_13 = PhotoImage(
         file=relative_to_assets("button_13.png"))
-    button_13 = Button(
+    four_button = Button(
         image=button_image_13,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_13 clicked"),
+        command=lambda: change_entry("4"),
         relief="flat"
     )
-    button_13.place(
+    four_button.place(
         x=275.0,
         y=374.0,
         width=70.0,
@@ -299,14 +325,14 @@ if __name__ == "__main__":
 
     button_image_14 = PhotoImage(
         file=relative_to_assets("button_14.png"))
-    button_14 = Button(
+    multiply_button = Button(
         image=button_image_14,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_14 clicked"),
+        command=lambda: change_entry("*"),
         relief="flat"
     )
-    button_14.place(
+    multiply_button.place(
         x=635.0,
         y=284.0,
         width=70.0,
@@ -315,14 +341,14 @@ if __name__ == "__main__":
 
     button_image_15 = PhotoImage(
         file=relative_to_assets("button_15.png"))
-    button_15 = Button(
+    nine_button = Button(
         image=button_image_15,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_15 clicked"),
+        command=lambda: change_entry("9"),
         relief="flat"
     )
-    button_15.place(
+    nine_button.place(
         x=455.0,
         y=284.0,
         width=70.0,
@@ -331,14 +357,14 @@ if __name__ == "__main__":
 
     button_image_16 = PhotoImage(
         file=relative_to_assets("button_16.png"))
-    button_16 = Button(
+    eight_button = Button(
         image=button_image_16,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_16 clicked"),
+        command=lambda: change_entry("8"),
         relief="flat"
     )
-    button_16.place(
+    eight_button.place(
         x=365.0,
         y=284.0,
         width=70.0,
@@ -347,14 +373,14 @@ if __name__ == "__main__":
 
     button_image_17 = PhotoImage(
         file=relative_to_assets("button_17.png"))
-    button_17 = Button(
+    seven_button = Button(
         image=button_image_17,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_17 clicked"),
+        command=lambda: change_entry("7"),
         relief="flat"
     )
-    button_17.place(
+    seven_button.place(
         x=275.0,
         y=284.0,
         width=70.0,
@@ -363,14 +389,14 @@ if __name__ == "__main__":
 
     button_image_18 = PhotoImage(
         file=relative_to_assets("button_18.png"))
-    button_18 = Button(
+    plus_button = Button(
         image=button_image_18,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_18 clicked"),
+        command=lambda: change_entry("+"),
         relief="flat"
     )
-    button_18.place(
+    plus_button.place(
         x=635.0,
         y=465.0,
         width=70.0,
@@ -379,14 +405,14 @@ if __name__ == "__main__":
 
     button_image_19 = PhotoImage(
         file=relative_to_assets("button_19.png"))
-    button_19 = Button(
+    three_button = Button(
         image=button_image_19,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_19 clicked"),
+        command=lambda: change_entry("3"),
         relief="flat"
     )
-    button_19.place(
+    three_button.place(
         x=455.0,
         y=465.0,
         width=70.0,
@@ -395,14 +421,14 @@ if __name__ == "__main__":
 
     button_image_20 = PhotoImage(
         file=relative_to_assets("button_20.png"))
-    button_20 = Button(
+    two_button = Button(
         image=button_image_20,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_20 clicked"),
+        command=lambda: change_entry("2"),
         relief="flat"
     )
-    button_20.place(
+    two_button.place(
         x=365.0,
         y=465.0,
         width=70.0,
@@ -411,14 +437,14 @@ if __name__ == "__main__":
 
     button_image_21 = PhotoImage(
         file=relative_to_assets("button_21.png"))
-    button_21 = Button(
+    zero_button = Button(
         image=button_image_21,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_21 clicked"),
+        command=lambda: change_entry("0"),
         relief="flat"
     )
-    button_21.place(
+    zero_button.place(
         x=365.0,
         y=556.0,
         width=70.0,
@@ -427,14 +453,14 @@ if __name__ == "__main__":
 
     button_image_22 = PhotoImage(
         file=relative_to_assets("button_22.png"))
-    button_22 = Button(
+    decimal_point_button = Button(
         image=button_image_22,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_22 clicked"),
+        command=lambda: change_entry("."),
         relief="flat"
     )
-    button_22.place(
+    decimal_point_button.place(
         x=455.0,
         y=556.0,
         width=70.0,
@@ -443,14 +469,14 @@ if __name__ == "__main__":
 
     button_image_23 = PhotoImage(
         file=relative_to_assets("button_23.png"))
-    button_23 = Button(
+    one_button = Button(
         image=button_image_23,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_23 clicked"),
+        command=lambda: change_entry("1"),
         relief="flat"
     )
-    button_23.place(
+    one_button.place(
         x=275.0,
         y=465.0,
         width=70.0,
@@ -459,14 +485,14 @@ if __name__ == "__main__":
 
     button_image_24 = PhotoImage(
         file=relative_to_assets("button_24.png"))
-    button_24 = Button(
+    modulo_button = Button(
         image=button_image_24,
         borderwidth=0,
         highlightthickness=0,
-        command=lambda: print("button_24 clicked"),
+        command=lambda: change_entry("%"),
         relief="flat"
     )
-    button_24.place(
+    modulo_button.place(
         x=275.0,
         y=556.0,
         width=70.0,
@@ -640,8 +666,6 @@ if __name__ == "__main__":
         fill="#FFFFFF",
         font=("Inter Medium", 24 * -1)
     )
-
     window.bind("<Return>", show_result)
-    entry_4.bind("<FocusIn>", clear_placeholder)
     window.resizable(False, False)
     window.mainloop()
