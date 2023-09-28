@@ -22,7 +22,7 @@ def change_entry(char):
     else:
         return
 
-    if char not in "sin()cos()x()%^.*/+-" and focused_widget != fx_entry:
+    if char not in "sin()cos()x()%^.*/" and focused_widget != fx_entry:
         if focused_widget in (x0_entry, x1_entry):
             focused_widget.insert(cursor_position, char)
     elif focused_widget == fx_entry:
@@ -39,18 +39,19 @@ def change_entry(char):
 
 
 def validate_guess_input(P):
-    if P == "":
+    if P == "-" or P == "+" or P == "":
         return True
-    try:
-        # Try to convert the input to a float
-        num = float(P)
-        # Check if the input is a valid integer or a float with one leading zero
-        if num == int(num) or (P[0] == '0' and P[1] == '.'):
-            return True
-        else:
+    else:
+        try:
+            # Try to convert the input to a float
+            num = float(P)
+            # Check if the input is a valid integer or a float with one leading zero
+            if num == int(num) or (P[0] == '0' and P[1] == '.'):
+                return True
+            else:
+                return False
+        except ValueError:
             return False
-    except ValueError:
-        return False
 
 
 def validate_fx_input(P):
@@ -89,7 +90,7 @@ def show_result(event=None):
         # print to r field the result and opens up a window which the user can export the interations
         if (expression.is_valid()):
             result = expression.solve()
-            result_var.set(str(round(result,6)))
+            result_var.set(str(round(result, 6)))
             iterations = pd.DataFrame(expression.steps)
             iterations.index = iterations.index+1
             print(iterations)
@@ -97,9 +98,10 @@ def show_result(event=None):
             popup_dialog = tk.Toplevel(window)
             popup_dialog.title("Iterations")
             try:
-                popup_dialog.iconbitmap(relative_to_assets("bisection_icon.ico"))
+                popup_dialog.iconbitmap(
+                    relative_to_assets("bisection_icon.ico"))
             except (FileNotFoundError, IOError):
-                 messagebox.showerror('FileNotFound', 'Icon File Missing')
+                messagebox.showerror('FileNotFound', 'Icon File Missing')
             txt = "Iterations for: \n\nf(x) = {},\t x_0 = {},\t x_1 = {}\n\n{}\n\nRoot: {}".format(
                 equation.get(), guess1.get(), guess2.get(), iterations, result)
             label = tk.Label(popup_dialog, text=txt)

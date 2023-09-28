@@ -24,8 +24,12 @@ python -m PyInstaller --add-data "assets/frame0/*;assets/frame0/" --onefile -w -
     The User can input using the Buttons in GUI or through Keyboard
     
 ### Key Mapping 
-    The mapping of Numbers, Mathematical Operations, modulo operator (%), decimal point (.) is one is to one, meaning when you press it using the keyboard it will put the corressponding key to the focused entry
+    The mapping of Numbers, Mathematical Operations, modulo operator (%), decimal point (.) is one is to one,
+    meaning when you press it using the keyboard it will put the corressponding key to the focused entry
 
-    Return or Enter Key - Will trigger the equal button showing the result in the "r" Result Field. In case the inputs are invalid it will cause the "r" field to output "Invalid Input. The Enter key will also show the Iterations of the Bisection Method and the use will have the choice to export the result to a ".txt" file. 
+    Return or Enter Key - Will trigger the equal button showing the result in the "r" Result Field.
+    In case the inputs are invalid it will cause the "r" field to output "Invalid Input.
+    The Enter key will also show the Iterations of the Bisection Method and the use will have
+    the choice to export the result to a ".txt" file. 
 
 
