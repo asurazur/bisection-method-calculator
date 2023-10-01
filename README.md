@@ -9,6 +9,7 @@ This is a root finding calculator using Bisection Method with tkinter module for
         python main.py
         
     2. Bundle the Script to exe
+        Turn off you anti-virus or windows security, you can toggle it back after pyinstaller is done
         python -m venv .\venv
         .\venv\Scripts\activate.bat
         pip install -r requirements.txt

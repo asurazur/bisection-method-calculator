@@ -1,6 +1,7 @@
 from pathlib import Path
 import tkinter as tk
 import pandas as pd
+import re
 from bisection import bisection
 from tkinter import Tk, Canvas, Entry, Button, PhotoImage, font, StringVar, filedialog, messagebox
 
@@ -12,6 +13,17 @@ ASSETS_PATH = OUTPUT_PATH / RELATIVE_PATH
 def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
 
+def parse_fx(expression):
+    # Replace "^" with "**"
+    expression = expression.replace("^", "**")
+
+    pattern = r"(\d)(x)"
+
+    # Compile the regular expression
+    regex = re.compile(pattern)
+
+    # Replace all matches with "digit*x"
+    return regex.sub(r"\1*\2", expression)
 
 def change_entry(char):
     # Get the currently focused widget
@@ -22,9 +34,25 @@ def change_entry(char):
     else:
         return
 
-    if char not in "sin()cos()x()%^.*/" and focused_widget != fx_entry:
+    if char not in "sin()cos()x()%^*/" and focused_widget != fx_entry:
         if focused_widget in (x0_entry, x1_entry):
-            focused_widget.insert(cursor_position, char)
+            if char in "-+":
+                try:
+                    first_char = focused_widget.get()[0]
+                    # if negative, check if first char is negative. if negative do nothing else append
+                    if char == "-" and first_char != "-" :
+                        focused_widget.insert(0,char)
+                    # if positive, check if the first char is negative. if negative remove negative
+                    elif char == "+" and first_char == "-":
+                        new_text = focused_widget.get()[1:]
+                        focused_widget.delete(0, tk.END)  # Clear the current text
+                        focused_widget.insert(0, new_text)
+
+                except IndexError:
+                    print("The string is empty, and there are no characters to access.")
+                
+            else:
+                focused_widget.insert(cursor_position, char)
     elif focused_widget == fx_entry:
         current_equation = equation.get()
         try:
@@ -37,22 +65,21 @@ def change_entry(char):
     focused_widget.icursor(cursor_position + 1)
     print("{} key is pressed".format(char))
 
-
 def validate_guess_input(P):
-    if P == "-" or P == "+" or P == "":
+    # This function is called when the entry is being edited
+    if P == "":
         return True
-    else:
-        try:
-            # Try to convert the input to a float
-            num = float(P)
-            # Check if the input is a valid integer or a float with one leading zero
-            if num == int(num) or (P[0] == '0' and P[1] == '.'):
-                return True
-            else:
-                return False
-        except ValueError:
-            return False
 
+    if P.count('.') > 1:
+        return False
+
+    if not P[-1].isdigit() and P[-1] != '.':
+        return False
+
+    if any(char.isalpha() for char in P):
+        return False
+
+    return True
 
 def validate_fx_input(P):
     valid_chars = "0123456789x^()%.*+-/"
@@ -80,8 +107,8 @@ def show_save_dialog(content_to_save):
 
 def show_result(event=None):
     try:
-        format_expression = ''.join(
-            ["**" if i == "^" else i for i in equation.get()])
+        format_expression = parse_fx(equation.get())
+        print(format_expression)
         expression = bisection(
             format_expression,
             float(guess1.get()),
@@ -114,6 +141,7 @@ def show_result(event=None):
             result_var.set("Invalid Input")
     except:
         print("Invalid parameters")
+        result_var.set("Invalid parameters")
 
 
 def clear():
@@ -141,6 +169,7 @@ if __name__ == "__main__":
     equation = StringVar()
     result_var = StringVar()
 
+    
     validate_guess_input_cmd = window.register(validate_guess_input)
     validate_fx_input_cmd = window.register(validate_fx_input)
 
@@ -609,7 +638,6 @@ if __name__ == "__main__":
         font=font.Font(family="Inter", size=16),
         justify="center",
         validate="key",
-        validatecommand=(validate_guess_input_cmd, "%P")
     )
     x1_entry.place(
         x=52.0,
