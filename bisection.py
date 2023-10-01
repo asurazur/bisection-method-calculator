@@ -1,5 +1,5 @@
 class bisection:
-    def __init__(self, fx: str = "x", x0: float = 0.0, x1: float = 0.0, e: float = 0.0001):
+    def __init__(self, fx: str = "x", x0: float = 0.0, x1: float = 0.0, e: float = 1e-6):
         """ 
             Initializes the Bisection Class
 
