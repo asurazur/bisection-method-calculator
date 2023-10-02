@@ -5,7 +5,7 @@ This is a root finding calculator using Bisection Method with tkinter module for
     
     1. Run from script
         make sure to have python installed in your device
-        open your terminal and run these commands:
+        make sure to open your terminal in the directory and run these commands:
             pip install -r requirements.txt
             python main.py
         
