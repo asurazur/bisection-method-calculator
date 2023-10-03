@@ -1,3 +1,4 @@
 tk==0.1.0
 pandas==1.5.3
 pyinstaller==6.0.0
+Pillow==9.4.0

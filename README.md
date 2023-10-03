@@ -1,10 +1,10 @@
-# bisection-method-calculator
-This is a root finding calculator using Bisection Method with tkinter module for GUI and Python
+# root-finding-tkinter-python
+This is a root finding calculator using Bisection Method or Regula Falsi with tkinter module for GUI and Python
 
 ## 2 ways to run the program
     
     1. Run from script
-        make sure to have python installed in your device
+        make sure to have python installed in your device (Python 3.11.1)
         pip install -r requirements
         python main.py
         
@@ -15,7 +15,10 @@ This is a root finding calculator using Bisection Method with tkinter module for
         pip install -r requirements.txt
         python -m PyInstaller --add-data "assets/frame0/*;assets/frame0/" --onefile -w --icon="assets\frame0\bisection_icon.ico" main.py
         dist\main.exe
-    
+
+# How to Switch root finding algorithm
+    Click the Circular Arrow
+
 ## There are 3 Input Fields and 1 Result Field:
         f(x) = The Function
         x_0 = First Guess

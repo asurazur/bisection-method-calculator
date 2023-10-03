@@ -2,8 +2,9 @@ from pathlib import Path
 import tkinter as tk
 import pandas as pd
 import re
-from bisection import bisection
-from tkinter import Tk, Canvas, Entry, Button, PhotoImage, font, StringVar, filedialog, messagebox
+from root_finding import bisection, regula_falsi
+from PIL import Image, ImageTk
+from tkinter import Tk, Canvas, Entry, Button, PhotoImage, font, StringVar, filedialog, messagebox, scrolledtext
 
 OUTPUT_PATH = Path(__file__).parent
 RELATIVE_PATH = "assets/frame0"
@@ -12,6 +13,18 @@ ASSETS_PATH = OUTPUT_PATH / RELATIVE_PATH
 
 def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
+
+def switch():
+    global is_bisection
+    if is_bisection == True:
+        is_bisection = False
+        title_var.set("Regula Falsi")
+        print("Current Algorithm: Regula Falsi")
+    else:
+        is_bisection = True
+        title_var.set("Bisection Method")
+        print("Current Algorithm: Bisection Method")
+        
 
 def parse_fx(expression):
     # Replace "^" with "**"
@@ -92,7 +105,7 @@ def validate_fx_input(P):
         prev_char = char
     return True
 
-
+# show save dialog after clicking export
 def show_save_dialog(content_to_save):
     file_path = filedialog.asksaveasfilename(
         defaultextension=".txt", filetypes=[("Text Files", "*.txt")])
@@ -104,46 +117,68 @@ def show_save_dialog(content_to_save):
         except Exception as e:
             print(f"Error saving file: {e}")
 
-
+# Calculate the result and open summary window
 def show_result(event=None):
     try:
         format_expression = parse_fx(equation.get())
         print(format_expression)
-        expression = bisection(
-            format_expression,
-            float(guess1.get()),
-            float(guess2.get()),
-        )
+        global is_bisection
+        if is_bisection:
+            expression = bisection(
+                format_expression,
+                float(guess1.get()),
+                float(guess2.get()),
+            )
+        else:
+            expression = regula_falsi(
+                format_expression,
+                float(guess1.get()),
+                float(guess2.get()),
+            )
         # print to r field the result and opens up a window which the user can export the interations
         if (expression.is_valid()):
             result = expression.solve()
             result_var.set(str(round(result, 6)))
-            iterations = pd.DataFrame(expression.steps)
-            iterations.index = iterations.index+1
-            print(iterations)
-            # Create the popup window
-            popup_dialog = tk.Toplevel(window)
-            popup_dialog.title("Iterations")
-            try:
-                popup_dialog.iconbitmap(
-                    relative_to_assets("bisection_icon.ico"))
-            except (FileNotFoundError, IOError):
-                messagebox.showerror('FileNotFound', 'Icon File Missing')
-            txt = "Iterations for: \n\nf(x) = {},\t x_0 = {},\t x_1 = {}\n\n{}\n\nRoot: {}".format(
-                equation.get(), guess1.get(), guess2.get(), iterations, result)
-            label = tk.Label(popup_dialog, text=txt)
-            label.pack(padx=120, pady=40)
-            export_button = tk.Button(
-                popup_dialog, text="Export", command=lambda: show_save_dialog(txt)
-            )
-            export_button.pack(pady=10)
+            show_summary_window(result, expression)
         else:
             result_var.set("Invalid Input")
     except:
         print("Invalid parameters")
         result_var.set("Invalid parameters")
 
+# Create a popup window showing the summary of the root finding method used
+def show_summary_window(result, expression):
+    iterations = pd.DataFrame(expression.steps)
+    iterations.index = iterations.index + 1
 
+    # Create the popup window
+    popup_dialog = tk.Toplevel(window)
+    popup_dialog.title("Iterations")
+    try:
+        popup_dialog.iconbitmap(
+            relative_to_assets("bisection_icon.ico")
+        )
+    except (FileNotFoundError, IOError):
+        messagebox.showerror('FileNotFound', 'Icon File Missing')
+    
+    txt = "{}\n\nIterations for: \n\nf(x) = {},\t x_0 = {},\t x_1 = {}\n\n{}\n\nRoot: {}".format(
+        title_var.get(),
+        equation.get(),
+        guess1.get(),
+        guess2.get(),
+        iterations.to_string(),  # Use to_string() to apply the display options
+        result
+    )
+    
+    label = tk.Label(popup_dialog, text=txt)
+    label.pack(padx=120, pady=40)
+    
+    export_button = tk.Button(
+        popup_dialog, text="Export", command=lambda: show_save_dialog(txt)
+    )
+    export_button.pack(pady=10)
+
+# Clear all Entries
 def clear():
     guess1.set("")
     guess2.set("")
@@ -154,10 +189,11 @@ def clear():
 if __name__ == "__main__":
     window = Tk()
     window.resizable(False, False)
-    window.title("Bisection Method Calculator")
+    window.title("Root Finding Calculator")
     window.geometry("725x652")
     window.configure(bg="#000000")
     window.bind("<Return>", show_result)
+    is_bisection = True
     try:
         icon = PhotoImage(file=relative_to_assets("bisection_icon.png"))
         window.tk.call('wm', 'iconphoto', window, icon)
@@ -168,7 +204,7 @@ if __name__ == "__main__":
     guess2 = StringVar()
     equation = StringVar()
     result_var = StringVar()
-
+    title_var = StringVar(value="Bisection Method")
     
     validate_guess_input_cmd = window.register(validate_guess_input)
     validate_fx_input_cmd = window.register(validate_fx_input)
@@ -646,6 +682,23 @@ if __name__ == "__main__":
         height=68.0-30
     )
 
+    # Switch
+    switch_raw_image = Image.open(relative_to_assets("switch.png")).resize((140,140))
+    switch_image = ImageTk.PhotoImage(image=switch_raw_image)
+    switch_button = Button(
+        image=switch_image,
+        borderwidth=0,
+        highlightthickness=0,
+        command=lambda: switch(),
+        relief="flat"
+    )
+    switch_button.place(
+        x=65.0,
+        y=350 + 50.0,
+        width=140.0,
+        height=140.0
+    )
+
     entry_image_3 = PhotoImage(
         file=relative_to_assets("entry_3.png"))
     entry_bg_3 = canvas.create_image(
@@ -727,13 +780,32 @@ if __name__ == "__main__":
         font=("PlayfairDisplayItalic SemiBold", 16 * -1)
     )
 
-    canvas.create_text(
-        29.0,
-        22.0,
-        anchor="nw",
-        text="Bisection Method Calculator",
-        fill="#FFFFFF",
-        font=("Inter Medium", 24 * -1)
+    # canvas.create_text(
+    #     29.0,
+    #     22.0,
+    #     anchor="nw",
+    #     text="Bisection Method Calculator",
+    #     fill="#FFFFFF",
+    #     font=("Inter Medium", 24 * -1)
+    # )
+    title_entry = Entry(
+        textvariable=title_var,
+        bd=0,
+        bg="#000000",
+        fg="#FFFFFF",
+        disabledbackground="#000000",
+        disabledforeground="#FFFFFF",
+        state="disabled",
+        highlightthickness=0,
+        insertbackground="Black",
+        font=font.Font(family="Inter Medium", size=24 * -1),
+        justify="left"
+    )
+    title_entry.place(
+        x=29,
+        y=22,
+        width=550.0,
+        height=78.0-30
     )
 
     window.mainloop()
