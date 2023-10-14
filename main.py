@@ -14,6 +14,7 @@ ASSETS_PATH = OUTPUT_PATH / RELATIVE_PATH
 def relative_to_assets(path: str) -> Path:
     return ASSETS_PATH / Path(path)
 
+
 def switch():
     global is_bisection
     if is_bisection == True:
@@ -24,7 +25,7 @@ def switch():
         is_bisection = True
         title_var.set("Bisection Method")
         print("Current Algorithm: Bisection Method")
-        
+
 
 def parse_fx(expression):
     # Replace "^" with "**"
@@ -37,6 +38,7 @@ def parse_fx(expression):
 
     # Replace all matches with "digit*x"
     return regex.sub(r"\1*\2", expression)
+
 
 def change_entry(char):
     # Get the currently focused widget
@@ -53,17 +55,18 @@ def change_entry(char):
                 try:
                     first_char = focused_widget.get()[0]
                     # if negative, check if first char is negative. if negative do nothing else append
-                    if char == "-" and first_char != "-" :
-                        focused_widget.insert(0,char)
+                    if char == "-" and first_char != "-":
+                        focused_widget.insert(0, char)
                     # if positive, check if the first char is negative. if negative remove negative
                     elif char == "+" and first_char == "-":
                         new_text = focused_widget.get()[1:]
-                        focused_widget.delete(0, tk.END)  # Clear the current text
+                        # Clear the current text
+                        focused_widget.delete(0, tk.END)
                         focused_widget.insert(0, new_text)
 
                 except IndexError:
                     print("The string is empty, and there are no characters to access.")
-                
+
             else:
                 focused_widget.insert(cursor_position, char)
     elif focused_widget == fx_entry:
@@ -77,6 +80,7 @@ def change_entry(char):
             equation.set(current_equation + char)
     focused_widget.icursor(cursor_position + 1)
     print("{} key is pressed".format(char))
+
 
 def validate_guess_input(P):
     # This function is called when the entry is being edited
@@ -94,6 +98,7 @@ def validate_guess_input(P):
 
     return True
 
+
 def validate_fx_input(P):
     valid_chars = "0123456789x^()%.*+-/"
     prev_char = None  # To keep track of the previous character
@@ -106,6 +111,8 @@ def validate_fx_input(P):
     return True
 
 # show save dialog after clicking export
+
+
 def show_save_dialog(content_to_save):
     file_path = filedialog.asksaveasfilename(
         defaultextension=".txt", filetypes=[("Text Files", "*.txt")])
@@ -118,6 +125,8 @@ def show_save_dialog(content_to_save):
             print(f"Error saving file: {e}")
 
 # Calculate the result and open summary window
+
+
 def show_result(event=None):
     try:
         format_expression = parse_fx(equation.get())
@@ -125,15 +134,17 @@ def show_result(event=None):
         global is_bisection
         if is_bisection:
             expression = bisection(
-                format_expression,
-                float(guess1.get()),
-                float(guess2.get()),
+                fx=format_expression,
+                x0=float(guess1.get()),
+                x1=float(guess2.get()),
+                e=float(accuracy.get())
             )
         else:
             expression = regula_falsi(
-                format_expression,
-                float(guess1.get()),
-                float(guess2.get()),
+                fx=format_expression,
+                x0=float(guess1.get()),
+                x1=float(guess2.get()),
+                e=float(accuracy.get())
             )
         # print to r field the result and opens up a window which the user can export the interations
         if (expression.is_valid()):
@@ -147,6 +158,8 @@ def show_result(event=None):
         result_var.set("Invalid parameters")
 
 # Create a popup window showing the summary of the root finding method used
+
+
 def show_summary_window(result, expression):
     iterations = pd.DataFrame(expression.steps)
     iterations.index = iterations.index + 1
@@ -160,25 +173,46 @@ def show_summary_window(result, expression):
         )
     except (FileNotFoundError, IOError):
         messagebox.showerror('FileNotFound', 'Icon File Missing')
-    
-    txt = "{}\n\nIterations for: \n\nf(x) = {},\t x_0 = {},\t x_1 = {}\n\n{}\n\nRoot: {}".format(
+
+    # Create a Canvas widget for scrollable content
+    canvas = tk.Canvas(popup_dialog)
+    canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+    # Create a Scrollbar and attach it to the Canvas
+    scrollbar = tk.Scrollbar(
+        popup_dialog, orient=tk.VERTICAL, command=canvas.yview)
+    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+    canvas.config(yscrollcommand=scrollbar.set)
+
+    # Create a Frame inside the Canvas to hold the content
+    content_frame = tk.Frame(canvas)
+    canvas.create_window((0, 0), window=content_frame, anchor=tk.NW)
+
+    txt = "{}\n\nIterations for: \n\nf(x) = {},     x_0 = {},     x_1 = {},      e = {}\n\n{}\n\nRoot: {}".format(
         title_var.get(),
         equation.get(),
         guess1.get(),
         guess2.get(),
-        iterations.to_string(),  # Use to_string() to apply the display options
+        accuracy.get(),
+        iterations.to_string(),
         result
     )
-    
-    label = tk.Label(popup_dialog, text=txt)
+
+    label = tk.Label(content_frame, text=txt)
     label.pack(padx=120, pady=40)
-    
+
     export_button = tk.Button(
-        popup_dialog, text="Export", command=lambda: show_save_dialog(txt)
+        content_frame, text="Export", command=lambda: show_save_dialog(txt)
     )
     export_button.pack(pady=10)
 
+    # Update the scrollable region
+    content_frame.update_idletasks()
+    canvas.config(scrollregion=canvas.bbox("all"))
+
 # Clear all Entries
+
+
 def clear():
     guess1.set("")
     guess2.set("")
@@ -200,12 +234,13 @@ if __name__ == "__main__":
     except (FileNotFoundError, IOError):
         messagebox.showerror('FileNotFound', 'Icon File Missing')
 
+    accuracy = StringVar()
     guess1 = StringVar()
     guess2 = StringVar()
     equation = StringVar()
     result_var = StringVar()
     title_var = StringVar(value="Bisection Method")
-    
+
     validate_guess_input_cmd = window.register(validate_guess_input)
     validate_fx_input_cmd = window.register(validate_fx_input)
 
@@ -647,8 +682,6 @@ if __name__ == "__main__":
         highlightthickness=0,
         font=font.Font(family="Inter", size=16),
         justify="center",
-        validate="key",
-        validatecommand=(validate_guess_input_cmd, "%P")
     )
     x0_entry.place(
         x=52.0,
@@ -673,17 +706,40 @@ if __name__ == "__main__":
         highlightthickness=0,
         font=font.Font(family="Inter", size=16),
         justify="center",
-        validate="key",
     )
     x1_entry.place(
         x=52.0,
-        y=285.0+30,
+        y=280.0+30,
+        width=168.0,
+        height=68.0-30
+    )
+
+    entry_bg_3 = canvas.create_image(
+        136.0,
+        410.0,
+        image=entry_image_2
+    )
+    e_entry = Entry(
+        textvariable=accuracy,
+        bd=0,
+        bg="#313131",
+        fg="#FFFFFF",
+        insertbackground="white",
+        highlightthickness=0,
+        font=font.Font(family="Inter", size=16),
+        justify="center",
+        validate="key",
+    )
+    e_entry.place(
+        x=52.0,
+        y=400.0,
         width=168.0,
         height=68.0-30
     )
 
     # Switch
-    switch_raw_image = Image.open(relative_to_assets("switch.png")).resize((140,140))
+    switch_raw_image = Image.open(
+        relative_to_assets("switch.png")).resize((100, 100))
     switch_image = ImageTk.PhotoImage(image=switch_raw_image)
     switch_button = Button(
         image=switch_image,
@@ -693,10 +749,10 @@ if __name__ == "__main__":
         relief="flat"
     )
     switch_button.place(
-        x=65.0,
-        y=350 + 50.0,
-        width=140.0,
-        height=140.0
+        x=80.0,
+        y=480,
+        width=100.0,
+        height=100.0
     )
 
     entry_image_3 = PhotoImage(
@@ -780,14 +836,15 @@ if __name__ == "__main__":
         font=("PlayfairDisplayItalic SemiBold", 16 * -1)
     )
 
-    # canvas.create_text(
-    #     29.0,
-    #     22.0,
-    #     anchor="nw",
-    #     text="Bisection Method Calculator",
-    #     fill="#FFFFFF",
-    #     font=("Inter Medium", 24 * -1)
-    # )
+    canvas.create_text(
+        53.0,
+        383.0,
+        anchor="nw",
+        text="e",
+        fill="#FFFFFF",
+        font=("PlayfairDisplayItalic SemiBold", 16 * -1)
+    )
+
     title_entry = Entry(
         textvariable=title_var,
         bd=0,
